@@ -5,14 +5,15 @@ package storm.scala.dsl
 //import java.util.Map
 //import backtype.storm.task.TopologyContext
 //import backtype.storm.spout.SpoutOutputCollector
-import backtype.storm.topology.OutputFieldsDeclarer
 import backtype.storm.topology.base.BaseTransactionalSpout
-import backtype.storm.tuple.Fields
+//import backtype.storm.tuple.Fields
 //import collection.JavaConverters._
 import collection.JavaConversions._
 
 abstract class StormTransactionalSpout(val outputFields: List[String],
-                          val isDistributed: Boolean = false) extends BaseTransactionalSpout with SetupFunc {
+                          val isDistributed: Boolean = false) extends BaseTransactionalSpout
+                                                              with SetupFunc
+                                                              with DeclareOutputFields {
 //  var _context:TopologyContext = _
 //  var _collector:SpoutOutputCollector = _
 
@@ -24,10 +25,6 @@ abstract class StormTransactionalSpout(val outputFields: List[String],
 
   // nextTuple needs to be defined by each spout inheriting from here
   //def nextTuple() {}
-
-  def declareOutputFields(declarer: OutputFieldsDeclarer) {
-    declarer.declare(new Fields(outputFields))
-  }
 
   // DSL for emit and emitDirect.
   // [toStream(<streamId>)] emit (val1, val2, ..)

@@ -12,7 +12,9 @@ import collection.JavaConverters._
 import collection.JavaConversions._
 
 abstract class StormSpout(val outputFields: List[String],
-                          val isDistributed: Boolean = false) extends BaseRichSpout with SetupFunc {
+                          val isDistributed: Boolean = false) extends BaseRichSpout
+                                                              with SetupFunc
+                                                              with DeclareOutputFields {
   var _context:TopologyContext = _
   var _collector:SpoutOutputCollector = _
 
@@ -24,9 +26,6 @@ abstract class StormSpout(val outputFields: List[String],
 
   // nextTuple needs to be defined by each spout inheriting from here
   //def nextTuple() {}
-
-  def declareOutputFields(declarer: OutputFieldsDeclarer) =
-    declarer.declare(new Fields(outputFields))
 
   // DSL for emit and emitDirect.
   // [toStream(<streamId>)] emit (val1, val2, ..)
