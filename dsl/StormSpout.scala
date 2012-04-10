@@ -5,9 +5,7 @@ package storm.scala.dsl
 import java.util.Map
 import backtype.storm.task.TopologyContext
 import backtype.storm.spout.SpoutOutputCollector
-import backtype.storm.topology.OutputFieldsDeclarer
 import backtype.storm.topology.base.BaseRichSpout
-import backtype.storm.tuple.Fields
 import collection.JavaConverters._
 import collection.JavaConversions._
 
@@ -18,7 +16,7 @@ abstract class StormSpout(val outputFields: List[String],
   var _context:TopologyContext = _
   var _collector:SpoutOutputCollector = _
 
-  def open(conf: Map[_, _], context: TopologyContext, collector: SpoutOutputCollector) = {
+  def open(conf: Map[_, _], context: TopologyContext, collector: SpoutOutputCollector)  {
     _context = context
     _collector = collector
     _setup()
@@ -40,15 +38,19 @@ abstract class StormSpout(val outputFields: List[String],
   // Autoboxing is done for both emit and emitDirect
   def emit(values: Any*) = _collector.emit(values.toList.map { _.asInstanceOf[AnyRef] })
 
-  def emitDirect(taskId: Int, values: Any*) = _collector.emitDirect(taskId,
+  def emitDirect(taskId: Int, values: Any*) {
+    _collector.emitDirect(taskId,
     values.toList.map { _.asInstanceOf[AnyRef] })
+  }
 }
 
 
 class StreamEmitter(collector: SpoutOutputCollector, streamId: String) {
   def emit(values: AnyRef*) = collector.emit(streamId, values.toList)
 
-  def emitDirect(taskId: Int, values: AnyRef*) = collector.emitDirect(taskId, streamId, values.toList)
+  def emitDirect(taskId: Int, values: AnyRef*) {
+    collector.emitDirect(taskId, streamId, values.toList)
+  }
 }
 
 
@@ -64,5 +66,7 @@ class MessageIdEmitter(collector: SpoutOutputCollector, msgId: AnyRef) {
 
   def emit(values: AnyRef*) = emitFunc(values.toList)
 
-  def emitDirect(taskId: Int, values: AnyRef*) = emitDirectFunc(taskId, values.toList)
+  def emitDirect(taskId: Int, values: AnyRef*) {
+    emitDirectFunc(taskId, values.toList)
+  }
 }
