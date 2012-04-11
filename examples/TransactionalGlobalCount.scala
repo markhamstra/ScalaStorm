@@ -6,14 +6,14 @@ import backtype.storm.LocalCluster
 import backtype.storm.testing.MemoryTransactionalSpout
 import backtype.storm.tuple.{Fields, Tuple, Values}
 import collection.JavaConversions._
-import collection.mutable.{Map, HashMap}
+import collection.mutable.HashMap
 import java.math.BigInteger
 import backtype.storm.topology.base.{BaseTransactionalBolt, BaseBatchBolt}
 import backtype.storm.coordination.BatchOutputCollector
 import backtype.storm.task.TopologyContext
 import backtype.storm.topology.OutputFieldsDeclarer
 import backtype.storm.transactional.{TransactionAttempt, ICommitter, TransactionalTopologyBuilder}
-import java.util.Map
+
 
 object TransactionalGlobalCount {
   val PARTITION_TAKE_PER_BATCH = 3
@@ -48,9 +48,6 @@ object TransactionalGlobalCount {
 
   val GLOBAL_COUNT_KEY = "GLOBAL-COUNT"
 
-//  public static Map<String, Value> DATABASE = new HashMap<String, Value>();
-//  public static final String GLOBAL_COUNT_KEY = "GLOBAL-COUNT";
-
   class BatchCount extends BaseBatchBolt {
     var _id: Object = null.asInstanceOf[Object]
     var _collector: BatchOutputCollector = null
@@ -75,33 +72,6 @@ object TransactionalGlobalCount {
 
   }
 
-  //  public static class BatchCount extends BaseBatchBolt {
-//    Object _id;
-//    BatchOutputCollector _collector;
-//
-//    int _count = 0;
-//
-//    @Override
-//    public void prepare(Map conf, TopologyContext context, BatchOutputCollector collector, Object id) {
-//      _collector = collector;
-//      _id = id;
-//    }
-//
-//    @Override
-//    public void execute(Tuple tuple) {
-//      _count++;
-//    }
-//
-//    @Override
-//    public void finishBatch() {
-//      _collector.emit(new Values(_id, _count));
-//    }
-//
-//    @Override
-//    public void declareOutputFields(OutputFieldsDeclarer declarer) {
-//      declarer.declare(new Fields("id", "count"));
-//    }
-//  }
 
   class UpdateGlobalCount extends BaseTransactionalBolt with ICommitter {
     var _attempt: TransactionAttempt = null
@@ -139,48 +109,6 @@ object TransactionalGlobalCount {
       declarer declare(new Fields("id", "sum"))
     }
   }
-
-//  public static class UpdateGlobalCount extends BaseTransactionalBolt implements ICommitter {
-//    TransactionAttempt _attempt;
-//    BatchOutputCollector _collector;
-//
-//    int _sum = 0;
-//
-//    @Override
-//    public void prepare(Map conf, TopologyContext context, BatchOutputCollector collector, TransactionAttempt attempt) {
-//      _collector = collector;
-//      _attempt = attempt;
-//    }
-//
-//    @Override
-//    public void execute(Tuple tuple) {
-//      _sum+=tuple.getInteger(1);
-//    }
-//
-//    @Override
-//    public void finishBatch() {
-//      Value val = DATABASE.get(GLOBAL_COUNT_KEY);
-//      Value newval;
-//      if(val == null || !val.txid.equals(_attempt.getTransactionId())) {
-//        newval = new Value();
-//        newval.txid = _attempt.getTransactionId();
-//        if(val==null) {
-//          newval.count = _sum;
-//        } else {
-//          newval.count = _sum + val.count;
-//        }
-//        DATABASE.put(GLOBAL_COUNT_KEY, newval);
-//      } else {
-//        newval = val;
-//      }
-//      _collector.emit(new Values(_attempt, newval.count));
-//    }
-//
-//    @Override
-//    public void declareOutputFields(OutputFieldsDeclarer declarer) {
-//      declarer.declare(new Fields("id", "sum"));
-//    }
-//  }
 
   def main(args: Array[String])  {
     val spout   = new MemoryTransactionalSpout(DATA, new Fields("word"), PARTITION_TAKE_PER_BATCH)
