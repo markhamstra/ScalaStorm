@@ -13,22 +13,23 @@ import backtype.storm.coordination.BatchOutputCollector
 import backtype.storm.task.TopologyContext
 import backtype.storm.topology.OutputFieldsDeclarer
 import backtype.storm.transactional.{TransactionAttempt, ICommitter, TransactionalTopologyBuilder}
+import java.util.Map
 
 
 object TransactionalGlobalCount {
   val PARTITION_TAKE_PER_BATCH = 3
   val DATA = new HashMap[java.lang.Integer, java.util.List[java.util.List[AnyRef]]]()
-  DATA += ( (0, List[java.util.List[AnyRef]](List(new Values("cat"),
+  DATA += ( (0, List[java.util.List[AnyRef]](new Values("cat"),
                                                   new Values("dog"),
                                                   new Values("chicken"),
                                                   new Values("cat"),
                                                   new Values("dog"),
-                                                  new Values("apple"))))
-    ,       (1, List[java.util.List[AnyRef]](List(new Values("cat"),
+                                                  new Values("apple")))
+    ,       (1, List[java.util.List[AnyRef]](new Values("cat"),
                                                   new Values("dog"),
                                                   new Values("apple"),
-                                                  new Values("banana"))))
-    ,       (2, List[java.util.List[AnyRef]](List(new Values("cat"),
+                                                  new Values("banana")))
+    ,       (2, List[java.util.List[AnyRef]](new Values("cat"),
                                                   new Values("cat"),
                                                   new Values("cat"),
                                                   new Values("cat"),
@@ -36,7 +37,7 @@ object TransactionalGlobalCount {
                                                   new Values("dog"),
                                                   new Values("dog"),
                                                   new Values("dog"),
-                                                  new Values("dog"))))
+                                                  new Values("dog")))
     )
 
   class Value {
@@ -49,7 +50,7 @@ object TransactionalGlobalCount {
   val GLOBAL_COUNT_KEY = "GLOBAL-COUNT"
 
   class BatchCount extends BaseBatchBolt {
-    var _id: Object = null.asInstanceOf[Object]
+    var _id: TransactionAttempt = null
     var _collector: BatchOutputCollector = null
     var _count: java.lang.Integer = 0
 
@@ -69,7 +70,6 @@ object TransactionalGlobalCount {
     override def declareOutputFields(declarer: OutputFieldsDeclarer) {
       declarer declare(new Fields("id", "count"))
     }
-
   }
 
 
