@@ -49,12 +49,12 @@ object TransactionalGlobalCount {
 
   val GLOBAL_COUNT_KEY = "GLOBAL-COUNT"
 
-  class BatchCount[Object] extends BaseBatchBolt[java.lang.Object] {
-    var _id: java.lang.Object = null.asInstanceOf[java.lang.Object]
+  class BatchCount extends BaseBatchBolt[AnyRef] {
+    var _id: AnyRef = null.asInstanceOf[AnyRef]
     var _collector: BatchOutputCollector = null
     var _count: java.lang.Integer = 0
 
-    def prepare(conf: java.util.Map[_,_], context: TopologyContext, collector: BatchOutputCollector, id: java.lang.Object) {
+    def prepare(conf: java.util.Map[_,_], context: TopologyContext, collector: BatchOutputCollector, id: AnyRef) {
       _collector = collector
       _id = id
     }
