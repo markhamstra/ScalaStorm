@@ -13,31 +13,32 @@ import backtype.storm.coordination.BatchOutputCollector
 import backtype.storm.task.TopologyContext
 import backtype.storm.topology.OutputFieldsDeclarer
 import backtype.storm.transactional.{TransactionAttempt, ICommitter, TransactionalTopologyBuilder}
-import java.util.Map
 
 
 object TransactionalGlobalCount {
   val PARTITION_TAKE_PER_BATCH = 3
   val DATA = new HashMap[java.lang.Integer, java.util.List[java.util.List[AnyRef]]]()
   DATA += ( (0, List[java.util.List[AnyRef]](new Values("cat"),
-                                                  new Values("dog"),
-                                                  new Values("chicken"),
-                                                  new Values("cat"),
-                                                  new Values("dog"),
-                                                  new Values("apple")))
+                                             new Values("dog"),
+                                             new Values("chicken"),
+                                             new Values("cat"),
+                                             new Values("dog"),
+                                             new Values("apple")))
+
     ,       (1, List[java.util.List[AnyRef]](new Values("cat"),
-                                                  new Values("dog"),
-                                                  new Values("apple"),
-                                                  new Values("banana")))
+                                             new Values("dog"),
+                                             new Values("apple"),
+                                             new Values("banana")))
+
     ,       (2, List[java.util.List[AnyRef]](new Values("cat"),
-                                                  new Values("cat"),
-                                                  new Values("cat"),
-                                                  new Values("cat"),
-                                                  new Values("cat"),
-                                                  new Values("dog"),
-                                                  new Values("dog"),
-                                                  new Values("dog"),
-                                                  new Values("dog")))
+                                             new Values("cat"),
+                                             new Values("cat"),
+                                             new Values("cat"),
+                                             new Values("cat"),
+                                             new Values("dog"),
+                                             new Values("dog"),
+                                             new Values("dog"),
+                                             new Values("dog")))
     )
 
   class Value {
