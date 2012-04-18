@@ -3,7 +3,7 @@ package storm.scala.examples
 //import storm.scala.dsl._
 import backtype.storm.Config
 import backtype.storm.LocalCluster
-import backtype.storm.testing.MemoryTransactionalSpout
+//import backtype.storm.testing.MemoryTransactionalSpout
 import backtype.storm.tuple.{Fields, Tuple, Values}
 import collection.JavaConversions._
 import collection.mutable.HashMap
