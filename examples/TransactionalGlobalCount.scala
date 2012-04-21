@@ -3,7 +3,6 @@ package storm.scala.examples
 //import storm.scala.dsl._
 import backtype.storm.Config
 import backtype.storm.LocalCluster
-//import backtype.storm.testing.MemoryTransactionalSpout
 import backtype.storm.tuple.{Fields, Tuple, Values}
 import collection.JavaConversions._
 import collection.mutable.HashMap
@@ -23,14 +22,14 @@ object TransactionalGlobalCount {
                                              new Values("chicken"),
                                              new Values("cat"),
                                              new Values("dog"),
-                                             new Values("apple")))
+                                             new Values("apple"))),
 
-    ,       (1, List[java.util.List[AnyRef]](new Values("cat"),
+            (1, List[java.util.List[AnyRef]](new Values("cat"),
                                              new Values("dog"),
                                              new Values("apple"),
-                                             new Values("banana")))
+                                             new Values("banana"))),
 
-    ,       (2, List[java.util.List[AnyRef]](new Values("cat"),
+            (2, List[java.util.List[AnyRef]](new Values("cat"),
                                              new Values("cat"),
                                              new Values("cat"),
                                              new Values("cat"),
@@ -51,13 +50,13 @@ object TransactionalGlobalCount {
   val GLOBAL_COUNT_KEY = "GLOBAL-COUNT"
 
   class BatchCount extends BaseBatchBolt[AnyRef] {
-    var _id: AnyRef = null.asInstanceOf[AnyRef]
-    var _collector: BatchOutputCollector = null
+    var _id: Option[AnyRef] = Option(null)
+    var _collector: Option[BatchOutputCollector] = Option(null)
     var _count: java.lang.Integer = 0
 
     def prepare(conf: java.util.Map[_,_], context: TopologyContext, collector: BatchOutputCollector, id: AnyRef) {
-      _collector = collector
-      _id = id
+      _collector = Option(collector)
+      _id = Option(id)
     }
 
     override def execute(tuple: Tuple) {
@@ -65,7 +64,7 @@ object TransactionalGlobalCount {
     }
 
     override def finishBatch() {
-      _collector.emit(new Values(_id, _count))
+      _collector.get.emit(new Values(_id, _count))
     }
 
     override def declareOutputFields(declarer: OutputFieldsDeclarer) {
@@ -75,13 +74,13 @@ object TransactionalGlobalCount {
 
 
   class UpdateGlobalCount extends BaseTransactionalBolt with ICommitter {
-    var _attempt: TransactionAttempt = null
-    var _collector: BatchOutputCollector = null
+    var _attempt: Option[TransactionAttempt] = Option(null)
+    var _collector: Option[BatchOutputCollector] = Option(null)
     var _sum: java.lang.Integer = 0
 
     def prepare(conf: java.util.Map[_,_], context: TopologyContext, collector: BatchOutputCollector, attempt: TransactionAttempt) {
-      _collector = collector
-      _attempt = attempt
+      _collector = Option(collector)
+      _attempt = Option(attempt)
     }
 
     override def execute(tuple: Tuple) {
@@ -91,9 +90,9 @@ object TransactionalGlobalCount {
     override def finishBatch() {
       val value: Value = DATABASE.get(GLOBAL_COUNT_KEY)
       var newValue = new Value
-      if (value == null || !value.txid.equals(_attempt.getTransactionId)) {
+      if (value == null || !value.txid.equals(_attempt.get.getTransactionId)) {
         newValue = new Value
-        newValue.txid = _attempt.getTransactionId
+        newValue.txid = _attempt.get.getTransactionId
         if (value == null) {
           newValue.count = _sum
         } else {
@@ -103,7 +102,7 @@ object TransactionalGlobalCount {
       } else {
         newValue = value
       }
-      _collector.emit(new Values(_attempt, newValue.count));
+      _collector.get.emit(new Values(_attempt, newValue.count));
     }
 
     override def declareOutputFields(declarer: OutputFieldsDeclarer) {
