@@ -50,13 +50,15 @@ object TransactionalGlobalCount {
   val GLOBAL_COUNT_KEY = "GLOBAL-COUNT"
 
   class BatchCount extends BaseBatchBolt[AnyRef] {
-    var _id: Option[AnyRef] = Option(null)
-    var _collector: Option[BatchOutputCollector] = Option(null)
+    var _id: AnyRef = _
+    var _collector: BatchOutputCollector = _
     var _count: java.lang.Integer = 0
 
     def prepare(conf: java.util.Map[_,_], context: TopologyContext, collector: BatchOutputCollector, id: AnyRef) {
-      _collector = Option(collector)
-      _id = Option(id)
+      require(collector != null)
+      require(id != null)
+      _collector = collector
+      _id = id
     }
 
     override def execute(tuple: Tuple) {
@@ -64,7 +66,7 @@ object TransactionalGlobalCount {
     }
 
     override def finishBatch() {
-      _collector.get.emit(new Values(_id, _count))
+      _collector emit(new Values(_id, _count))
     }
 
     override def declareOutputFields(declarer: OutputFieldsDeclarer) {
@@ -74,13 +76,15 @@ object TransactionalGlobalCount {
 
 
   class UpdateGlobalCount extends BaseTransactionalBolt with ICommitter {
-    var _attempt: Option[TransactionAttempt] = Option(null)
-    var _collector: Option[BatchOutputCollector] = Option(null)
+    var _attempt: TransactionAttempt = _
+    var _collector: BatchOutputCollector = _
     var _sum: java.lang.Integer = 0
 
     def prepare(conf: java.util.Map[_,_], context: TopologyContext, collector: BatchOutputCollector, attempt: TransactionAttempt) {
-      _collector = Option(collector)
-      _attempt = Option(attempt)
+      require(collector != null)
+      require(attempt != null)
+      _collector = collector
+      _attempt = attempt
     }
 
     override def execute(tuple: Tuple) {
@@ -90,9 +94,9 @@ object TransactionalGlobalCount {
     override def finishBatch() {
       val value: Value = DATABASE.get(GLOBAL_COUNT_KEY)
       var newValue = new Value
-      if (value == null || !value.txid.equals(_attempt.get.getTransactionId)) {
+      if (value == null || !value.txid.equals(_attempt.getTransactionId)) {
         newValue = new Value
-        newValue.txid = _attempt.get.getTransactionId
+        newValue.txid = _attempt.getTransactionId
         if (value == null) {
           newValue.count = _sum
         } else {
@@ -102,7 +106,7 @@ object TransactionalGlobalCount {
       } else {
         newValue = value
       }
-      _collector.get.emit(new Values(_attempt, newValue.count));
+      _collector emit(new Values(_attempt, newValue.count))
     }
 
     override def declareOutputFields(declarer: OutputFieldsDeclarer) {
